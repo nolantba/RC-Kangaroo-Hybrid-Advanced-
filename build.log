@@ -1,0 +1,279 @@
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c RCKangaroo.cpp -o RCKangaroo.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c GpuKang.cpp -o GpuKang.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c CpuKang.cpp -o CpuKang.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c Ec.cpp -o Ec.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c Lambda.cpp -o Lambda.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c utils.cpp -o utils.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c WorkFile.cpp -o WorkFile.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c XorFilter.cpp -o XorFilter.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c GpuMonitor.cpp -o GpuMonitor.o
+g++ -std=c++17 -I/usr/local/cuda-12.6/include -O3 -DNDEBUG -ffunction-sections -fdata-sections -march=native -mtune=native -flto -finline-functions -funroll-loops -fopenmp -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 -DUSE_NVML -c GpuHerdManager.cpp -o GpuHerdManager.o
+/usr/local/cuda-12.6/bin/nvcc -std=c++17 -arch=sm_86 -O3 -Xptxas -O3 -Xptxas -dlcm=ca -Xptxas --def-load-cache=ca -Xptxas --def-store-cache=wb -Xptxas=-allow-expensive-optimizations=true -Xfatbin=-compress-all -DUSE_JACOBIAN=1 -DUSE_PERSISTENT_KERNELS=0 -DUSE_SOTA_PLUS=0 --use_fast_math --extra-device-vectorization -dlto -rdc=true -Xcompiler -ffunction-sections -Xcompiler -fdata-sections -c RCGpuCore.cu -o RCGpuCore.o
+make: /usr/local/cuda-12.6/bin/nvcc: No such file or directory
+make: *** [Makefile:85: RCGpuCore.o] Error 127
+make: *** Waiting for unfinished jobs....
+In file included from GpuMonitor.cpp:3:
+GpuMonitor.h:11:10: fatal error: nvml.h: No such file or directory
+   11 | #include <nvml.h>
+      |          ^~~~~~~~
+compilation terminated.
+make: *** [Makefile:77: GpuMonitor.o] Error 1
+In file included from GpuHerdManager.cpp:6:
+GpuHerdManager.h:7:10: fatal error: cuda_runtime.h: No such file or directory
+    7 | #include <cuda_runtime.h>
+      |          ^~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Makefile:93: GpuHerdManager.o] Error 1
+XorFilter.cpp: In member function 'bool XorFilter8::Load(const char*)':
+XorFilter.cpp:250:10: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  250 |     fread(&magic, sizeof(magic), 1, f);
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+XorFilter.cpp:251:10: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  251 |     fread(&version, sizeof(version), 1, f);
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+XorFilter.cpp:258:10: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  258 |     fread(&seed, sizeof(seed), 1, f);
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+XorFilter.cpp:259:10: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  259 |     fread(&block_length, sizeof(block_length), 1, f);
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+XorFilter.cpp:260:10: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  260 |     fread(&fingerprints_count, sizeof(fingerprints_count), 1, f);
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+XorFilter.cpp:265:10: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)' declared with attribute 'warn_unused_result' [-Wunused-result]
+  265 |     fread(fingerprints, sizeof(uint8_t), fingerprints_count, f);
+      |     ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+GpuKang.cpp:8:10: fatal error: cuda_runtime.h: No such file or directory
+    8 | #include "cuda_runtime.h"
+      |          ^~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Makefile:77: GpuKang.o] Error 1
+RCKangaroo.cpp:11:10: fatal error: cuda_runtime.h: No such file or directory
+   11 | #include "cuda_runtime.h"
+      |          ^~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Makefile:77: RCKangaroo.o] Error 1
+WorkFile.cpp: In member function 'bool RCWorkFile::SaveAs(const std::string&)':
+WorkFile.cpp:204:37: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 3 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  204 |     printf("Work file saved: %s (%llu ops, %llu DPs)\n",
+      |                                  ~~~^
+      |                                     |
+      |                                     long long unsigned int
+      |                                  %lu
+  205 |            filename.c_str(), header.total_ops, header.dp_count);
+      |                              ~~~~~~~~~~~~~~~~
+      |                                     |
+      |                                     uint64_t {aka long unsigned int}
+WorkFile.cpp:204:47: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 4 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  204 |     printf("Work file saved: %s (%llu ops, %llu DPs)\n",
+      |                                            ~~~^
+      |                                               |
+      |                                               long long unsigned int
+      |                                            %lu
+  205 |            filename.c_str(), header.total_ops, header.dp_count);
+      |                                                ~~~~~~~~~~~~~~~
+      |                                                       |
+      |                                                       uint64_t {aka long unsigned int}
+WorkFile.cpp: In member function 'bool RCWorkFile::Load(const std::string&)':
+WorkFile.cpp:247:62: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 3 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  247 |             printf("ERROR: Failed to read DP records (%zu/%llu)\n",
+      |                                                           ~~~^
+      |                                                              |
+      |                                                              long long unsigned int
+      |                                                           %lu
+  248 |                    read_count, header.dp_count);
+      |                                ~~~~~~~~~~~~~~~                
+      |                                       |
+      |                                       uint64_t {aka long unsigned int}
+WorkFile.cpp:261:28: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  261 |     printf("  Progress: %llu ops, %llu DPs\n", header.total_ops, header.dp_count);
+      |                         ~~~^                   ~~~~~~~~~~~~~~~~
+      |                            |                          |
+      |                            long long unsigned int     uint64_t {aka long unsigned int}
+      |                         %lu
+WorkFile.cpp:261:38: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 3 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  261 |     printf("  Progress: %llu ops, %llu DPs\n", header.total_ops, header.dp_count);
+      |                                   ~~~^                           ~~~~~~~~~~~~~~~
+      |                                      |                                  |
+      |                                      long long unsigned int             uint64_t {aka long unsigned int}
+      |                                   %lu
+WorkFile.cpp:262:27: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  262 |     printf("  Elapsed: %llu seconds (%.1f hours)\n",
+      |                        ~~~^
+      |                           |
+      |                           long long unsigned int
+      |                        %lu
+  263 |            header.elapsed_seconds, header.elapsed_seconds / 3600.0);
+      |            ~~~~~~~~~~~~~~~~~~~~~~
+      |                   |
+      |                   uint64_t {aka long unsigned int}
+WorkFile.cpp: In static member function 'static bool RCWorkFile::Merge(const std::vector<std::__cxx11::basic_string<char> >&, const std::string&)':
+WorkFile.cpp:324:31: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 3 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  324 |     printf("Base file: %s (%llu ops, %llu DPs)\n",
+      |                            ~~~^
+      |                               |
+      |                               long long unsigned int
+      |                            %lu
+  325 |            input_files[0].c_str(), merged.header.total_ops, merged.header.dp_count);
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~~
+      |                                                  |
+      |                                                  uint64_t {aka long unsigned int}
+WorkFile.cpp:324:41: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 4 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  324 |     printf("Base file: %s (%llu ops, %llu DPs)\n",
+      |                                      ~~~^
+      |                                         |
+      |                                         long long unsigned int
+      |                                      %lu
+  325 |            input_files[0].c_str(), merged.header.total_ops, merged.header.dp_count);
+      |                                                             ~~~~~~~~~~~~~~~~~~~~~~
+      |                                                                           |
+      |                                                                           uint64_t {aka long unsigned int}
+WorkFile.cpp:337:50: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 3 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  337 |         printf("XOR filter built: %.1f MB for %llu DPs\n",
+      |                                               ~~~^
+      |                                                  |
+      |                                                  long long unsigned int
+      |                                               %lu
+  338 |                dp_filter.GetSizeBytes() / 1024.0 / 1024.0, merged.header.dp_count);
+      |                                                            ~~~~~~~~~~~~~~~~~~~~~~
+      |                                                                          |
+      |                                                                          uint64_t {aka long unsigned int}
+WorkFile.cpp:405:45: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 3 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  405 |         printf("  Added %zu DPs, skipped %llu duplicates\n", added, duplicates_found);
+      |                                          ~~~^                       ~~~~~~~~~~~~~~~~
+      |                                             |                       |
+      |                                             long long unsigned int  uint64_t {aka long unsigned int}
+      |                                          %lu
+WorkFile.cpp:406:29: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  406 |         printf("  Total: %llu ops, %zu DPs\n", total_ops, merged.dp_records.size());
+      |                          ~~~^                  ~~~~~~~~~
+      |                             |                  |
+      |                             |                  uint64_t {aka long unsigned int}
+      |                             long long unsigned int
+      |                          %lu
+WorkFile.cpp:425:36: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  425 |     printf("  Total operations: %llu\n", total_ops);
+      |                                 ~~~^     ~~~~~~~~~
+      |                                    |     |
+      |                                    |     uint64_t {aka long unsigned int}
+      |                                    long long unsigned int
+      |                                 %lu
+WorkFile.cpp:426:29: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  426 |     printf("  Total DPs: %llu\n", merged.header.dp_count);
+      |                          ~~~^     ~~~~~~~~~~~~~~~~~~~~~~
+      |                             |                   |
+      |                             |                   uint64_t {aka long unsigned int}
+      |                             long long unsigned int
+      |                          %lu
+WorkFile.cpp:427:38: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  427 |     printf("  Duplicates removed: %llu\n", duplicates_found);
+      |                                   ~~~^     ~~~~~~~~~~~~~~~~
+      |                                      |     |
+      |                                      |     uint64_t {aka long unsigned int}
+      |                                      long long unsigned int
+      |                                   %lu
+WorkFile.cpp: In member function 'bool RCWorkFile::VerifyIntegrity()':
+WorkFile.cpp:452:46: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  452 |         printf("ERROR: DP count mismatch (%llu in header, %zu in records)\n",
+      |                                           ~~~^
+      |                                              |
+      |                                              long long unsigned int
+      |                                           %lu
+  453 |                header.dp_count, dp_records.size());
+      |                ~~~~~~~~~~~~~~~                
+      |                       |
+      |                       uint64_t {aka long unsigned int}
+WorkFile.cpp: In member function 'void RCWorkFile::PrintInfo() const':
+WorkFile.cpp:491:28: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'long unsigned int' [-Wformat=]
+  491 |     printf("Operations: %llu (2^%.2f)\n", header.total_ops,
+      |                         ~~~^              ~~~~~~~~~~~~~~~~
+      |                            |                     |
+      |                            |                     long unsigned int
+      |                            long long unsigned int
+      |                         %lu
+WorkFile.cpp:493:27: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'long unsigned int' [-Wformat=]
+  493 |     printf("DPs found: %llu\n", header.dp_count);
+      |                        ~~~^     ~~~~~~~~~~~~~~~
+      |                           |            |
+      |                           |            long unsigned int
+      |                           long long unsigned int
+      |                        %lu
+WorkFile.cpp:494:32: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'long unsigned int' [-Wformat=]
+  494 |     printf("Dead kangaroos: %llu\n", header.dead_kangaroos);
+      |                             ~~~^     ~~~~~~~~~~~~~~~~~~~~~
+      |                                |            |
+      |                                |            long unsigned int
+      |                                long long unsigned int
+      |                             %lu
+WorkFile.cpp:500:27: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 2 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  500 |     printf("Elapsed: %02llu:%02llu:%02llu\n", hours, minutes, seconds);
+      |                      ~~~~~^                   ~~~~~
+      |                           |                   |
+      |                           |                   uint64_t {aka long unsigned int}
+      |                           long long unsigned int
+      |                      %02lu
+WorkFile.cpp:500:34: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 3 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  500 |     printf("Elapsed: %02llu:%02llu:%02llu\n", hours, minutes, seconds);
+      |                             ~~~~~^                   ~~~~~~~
+      |                                  |                   |
+      |                                  |                   uint64_t {aka long unsigned int}
+      |                                  long long unsigned int
+      |                             %02lu
+WorkFile.cpp:500:41: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 4 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+  500 |     printf("Elapsed: %02llu:%02llu:%02llu\n", hours, minutes, seconds);
+      |                                    ~~~~~^                     ~~~~~~~
+      |                                         |                     |
+      |                                         |                     uint64_t {aka long unsigned int}
+      |                                         long long unsigned int
+      |                                    %02lu
+WorkFile.cpp: In member function 'std::string RCWorkFile::GetInfoString() const':
+WorkFile.cpp:512:37: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 6 has type 'long unsigned int' [-Wformat=]
+  512 |              "Range:%u DP:%u Ops:%llu DPs:%llu Elapsed:%llus",
+      |                                  ~~~^
+      |                                     |
+      |                                     long long unsigned int
+      |                                  %lu
+  513 |              header.range_bits, header.dp_bits, header.total_ops,
+      |                                                 ~~~~~~~~~~~~~~~~
+      |                                                        |
+      |                                                        long unsigned int
+WorkFile.cpp:512:46: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 7 has type 'long unsigned int' [-Wformat=]
+  512 |              "Range:%u DP:%u Ops:%llu DPs:%llu Elapsed:%llus",
+      |                                           ~~~^
+      |                                              |
+      |                                              long long unsigned int
+      |                                           %lu
+  513 |              header.range_bits, header.dp_bits, header.total_ops,
+  514 |              header.dp_count, header.elapsed_seconds);
+      |              ~~~~~~~~~~~~~~~                  
+      |                     |
+      |                     long unsigned int
+WorkFile.cpp:512:59: warning: format '%llu' expects argument of type 'long long unsigned int', but argument 8 has type 'long unsigned int' [-Wformat=]
+  512 |              "Range:%u DP:%u Ops:%llu DPs:%llu Elapsed:%llus",
+      |                                                        ~~~^
+      |                                                           |
+      |                                                           long long unsigned int
+      |                                                        %lu
+  513 |              header.range_bits, header.dp_bits, header.total_ops,
+  514 |              header.dp_count, header.elapsed_seconds);
+      |                               ~~~~~~~~~~~~~~~~~~~~~~       
+      |                                      |
+      |                                      long unsigned int
+utils.cpp:68: warning: "DB_REC_LEN" redefined
+   68 | #define DB_REC_LEN                      32
+      | 
+utils.cpp:17: note: this is the location of the previous definition
+   17 | #define DB_REC_LEN (DB_FIND_LEN + 22 + 1)
+      | 
+utils.cpp:69: warning: "DB_FIND_LEN" redefined
+   69 | #define DB_FIND_LEN                     9
+      | 
+utils.cpp:14: note: this is the location of the previous definition
+   14 | #define DB_FIND_LEN 5
+      | 
+In file included from CpuKang.h:11,
+                 from CpuKang.cpp:9:
+GpuKang.h:71:9: error: 'DP' does not name a type
+   71 |         DP* h_herd_dp_buffer_;  // Host buffer for DP collection
+      |         ^~
+make: *** [Makefile:77: CpuKang.o] Error 1

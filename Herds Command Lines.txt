@@ -1,0 +1,89 @@
+# Navigate to the NVMe location
+cd /mnt/e/RC_Kangaroo_Hybrid
+
+cd /mnt/e/Herds
+
+cd /mnt/c/Users/Nolan/Desktop/RC_Kangaroo_Hybrid
+
+cd /mnt/c/Users/Nolan/Desktop/Kangaroo_CPU
+
+cd /mnt/c/Users/Nolan/Desktop/Herds
+
+cd /mnt/c/Users/Nolan/Desktop/TESTING
+
+
+# Verify everything is there
+ls -lh rckangaroo
+
+# Check if you have a work file already (if you were running before)
+ls -lh *.work 2>/dev/null || echo "No work file yet"
+
+# Start (or resume) puzzle 135 from the fast NVMe drive
+./rckangaroo -range 135 \
+  -start 20000000000000000000000000000000000 \
+  -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
+  -dp 28 \
+  -gpu 012 -cpu 64 \
+  -workfile puzzle135.work \
+  -autosave 300
+
+
+./rckangaroo -range 135 -start 4000000000000000000000000000000000 -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -dp 38 -gpu 012 -cpu 64 -workfile puzzle135.work -autosave 300
+
+./rckangaroo -range 135 -start 4000000000000000000000000000000000 -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -dp 28 -gpu 012 -cpu 64 -workfile puzzle135.work -autosave 300
+
+cd /mnt/e/RC_Kangaroo_Hybrid
+
+
+make clean && make SM=86 USE_JACOBIAN=1 PROFILE=release USE_NVML=1 -j
+
+
+
+
+
+export PATH=/usr/local/cuda-12.6/bin:$PATH
+make clean
+make SM=86 USE_JACOBIAN=1 PROFILE=release USE_NVML=1 -j
+
+
+
+
+
+./rckangaroo -range 135 -start 4000000000000000000000000000000000 \
+  -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
+  -dp 38 -gpu 012 -cpu 64 -workfile puzzle135_dp38.work -autosave 300
+  
+  
+  ./rckangaroo -range 135 -start 4000000000000000000000000000000000 \
+  -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
+  -dp 28 -gpu 012 -cpu 64 -workfile puzzle135_dp28.work -autosave 300
+  
+  
+   ./rckangaroo -range 135 -start 4000000000000000000000000000000000 \
+  -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
+  -dp 24 -gpu 012 -cpu 64 -workfile puzzle135_dp24.work -autosave 300
+  
+  
+  
+  
+  
+   ./rckangaroo -range 75 -start 4000000000000000000
+  -pubkey 03726b574f193e374686d8e12bc6e4142adeb06770e0a2856f5e4ad89f66044755
+  -dp 14 -gpu 012 -cpu 64 
+  
+  
+  ./rckangaroo -range 75 -start 4000000000000000000 -pubkey 03726b574f193e374686d8e12bc6e4142adeb06770e0a2856f5e4ad89f66044755 -dp 13 -gpu 012 -cpu 64
+  
+    ./rckangaroo -range 80 -start 80000000000000000000 -pubkey 037e1238f7b1ce757df94faa9a2eb261bf0aeb9f84dbf81212104e78931c2a19dc -dp 13 -gpu 012 -cpu 64
+	
+	  ./rckangaroo -range 85 -start 1000000000000000000000 -pubkey 0329c4574a4fd8c810b7e42a4b398882b381bcd85e40c6883712912d167c83e73a -dp 14 -gpu 012 -cpu 64
+	  
+	   ./rckangaroo -range 90 -start 20000000000000000000000 -pubkey 035c38bd9ae4b10e8a250857006f3cfd98ab15a6196d9f4dfd25bc7ecc77d788d5 -dp 16 -gpu 012 -cpu 0
+	   
+	    ./rckangaroo -herds -range 135 -start 4000000000000000000000000000000000 -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -dp 20 -gpu 012 -cpu 64 -workfile puzzle135_dp20.work -autosave 300
+	   
+	 
+	 ./rckangaroo -range 75 -start 4000000000000000000 -pubkey 03726b574f193e374686d8e12bc6e4142adeb06770e0a2856f5e4ad89f66044755 -dp 13 -cpu 64
+	 
+	 
+	 ./rckangaroo -range 80 -start 80000000000000000000 -pubkey 037e1238f7b1ce757df94faa9a2eb261bf0aeb9f84dbf81212104e78931c2a19dc -dp 13 -cpu 64
