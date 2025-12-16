@@ -47,6 +47,8 @@ EcInt gPrivKey;
 volatile u64 TotalOps;
 u32 TotalSolved;
 u32 gTotalErrors;
+volatile u64 DroppedDPs = 0;
+volatile u64 TotalDPsGenerated = 0;
 u64 PntTotalOps;
 bool IsBench;
 
@@ -173,16 +175,29 @@ void* cpu_kang_thr_proc(void* data)
 void AddPointsToList(u32* data, int pnt_cnt, u64 ops_cnt)
 {
 	csAddPoints.Enter();
-
-	// Always count operations, even if buffer overflows
+	
 	PntTotalOps += ops_cnt;
-
+	TotalDPsGenerated += pnt_cnt;
+	
 	if (PntIndex + pnt_cnt >= MAX_CNT_LIST)
 	{
+		DroppedDPs += pnt_cnt;
+		
+		static u64 last_warning = 0;
+		if (DroppedDPs - last_warning >= 10000)
+		{
+			printf("\n⚠️  WARNING: DP BUFFER OVERFLOW!\n");
+			printf("    Dropped: %llu DPs (%.1f%% loss)\n",
+			       (unsigned long long)DroppedDPs,
+			       100.0 * DroppedDPs / TotalDPsGenerated);
+			printf("    FIX: Use -dp %d (current: %d)\n\n", gDP + 2, gDP);
+			last_warning = DroppedDPs;
+		}
+		
 		csAddPoints.Leave();
-		// Buffer full - silently drop DPs but operations are still counted
 		return;
 	}
+	
 	memcpy(pPntList + GPU_DP_SIZE * PntIndex, data, pnt_cnt * GPU_DP_SIZE);
 	PntIndex += pnt_cnt;
 	csAddPoints.Leave();
@@ -585,7 +600,7 @@ bool SolvePoint(EcPoint PntToSolve, int Range, int DP, EcInt* pk_res)
 	while (!gSolved)
 	{
 		CheckNewPoints();
-		Sleep(10);
+		Sleep(1);
 
 		// GPU monitoring and thermal management (every second)
 		if (g_gpu_monitor && (GetTickCount64() - tm_monitor > 1000))
@@ -660,7 +675,7 @@ bool SolvePoint(EcPoint PntToSolve, int Range, int DP, EcInt* pk_res)
 	for (int i = 0; i < CpuCnt; i++)
 		CpuKangs[i]->Stop();
 	while (ThrCnt)
-		Sleep(10);
+		Sleep(1);
 	for (int i = 0; i < GpuCnt; i++)
 	{
 #ifdef _WIN32
