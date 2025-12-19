@@ -48,7 +48,30 @@ CUDA: Driver 13.0 / Runtime 11.5
 OS: Linux (Ubuntu-based)
 Storage: NVMe (for work files)
 ```
+********************************************************************************
+* RCKangaroo v3.2 Hybrid+SOTA+ (c) 2024 RetiredCoder + fmg75 *
+* GPU+CPU Hybrid with SOTA+ Optimizations (+10-30% performance) *
+* Nataanii's Optimized Fork - SOTA++ Herds Save Functions *
+********************************************************************************
 
+MAIN: Speed: 5795 MKeys/s, Err: 0, DPs: 488755K/77175K, Time: 0d:00h:00m:10s/0d:00h:03m:38s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GPU Performance Monitor
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GPU 0: 1.06 GK/s │ 40°C │ 169W │ 100% util │ PCI 3
+GPU 1: 1.06 GK/s │ 44°C │ 169W │ 100% util │ PCI 4
+GPU 2: 1.07 GK/s │ 39°C │ 169W │ 100% util │ PCI 132
+CPU:   0.0 MK/s
+Total: 3.20 GK/s │ Avg Temp: 41°C │ Power: 507W
+
+K-Factor: 0.042 ✓ (ahead of schedule)
+DPs: 488452470 / 77175193 (632.9%) │ Buffer: 0 / 16777216 (0.0%)
+
+Point solved, K: 0.072 (with DP and GPU overheads)
+
+PRIVATE KEY: 00000000000000000000000000000000000000000000EA1A5C66DCC11B5AD180
+
+Work file saved: p80_wild.work (79272345600 ops, 3315943 DPs)
 ### Puzzle 80 - SOLVED ✅
 ```bash
 Command:
