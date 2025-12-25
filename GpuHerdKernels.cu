@@ -367,7 +367,7 @@ __global__ void ConvertKangarooFormat(
 }
 
 // Host-side launcher for ConvertKangarooFormat kernel
-extern "C" void ConvertKangarooFormatLauncher(
+void ConvertKangarooFormatLauncher(
     const u64* src_packed,
     u64* dst_x,
     u64* dst_y,
