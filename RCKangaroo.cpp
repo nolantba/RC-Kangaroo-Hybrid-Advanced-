@@ -356,12 +356,20 @@ void ShowStats(u64 tm_start, double exp_ops, double dp_val)
 	if (elapsed_ms == 0) elapsed_ms = 1; // Avoid division by zero
 
 	// Real speed = total ops / elapsed seconds / 1 million (for MKeys/s)
-	int speed = (int)(PntTotalOps / (elapsed_ms / 1000.0) / 1000000.0);
+	int total_speed = (int)(PntTotalOps / (elapsed_ms / 1000.0) / 1000000.0);
+
+	// Get CPU speed breakdown from GPU monitor
+	int cpu_speed = 0;
+	if (g_gpu_monitor) {
+		SystemStats sys_stats = g_gpu_monitor->GetSystemStats();
+		cpu_speed = (int)sys_stats.cpu_speed_mkeys;
+	}
+	int gpu_speed = total_speed - cpu_speed;
 
 	u64 est_dps_cnt = (u64)(exp_ops / dp_val);
 	u64 exp_sec_total = 0xFFFFFFFFFFFFFFFFull;
-	if (speed)
-		exp_sec_total = (u64)((exp_ops / 1000000) / speed); //in sec
+	if (total_speed)
+		exp_sec_total = (u64)((exp_ops / 1000000) / total_speed); //in sec
 	u64 exp_days = exp_sec_total / (3600 * 24);
 	int exp_hours = (int)(exp_sec_total - exp_days * (3600 * 24)) / 3600;
 	int exp_min = (int)(exp_sec_total - exp_days * (3600 * 24) - exp_hours * 3600) / 60;
@@ -373,7 +381,12 @@ void ShowStats(u64 tm_start, double exp_ops, double dp_val)
 	int min = (int)(sec_total - days * (3600 * 24) - hours * 3600) / 60;
 	int sec = (int)(sec_total - days * (3600 * 24) - hours * 3600 - min * 60);
 
-	printf("%sSpeed: %d MKeys/s, Err: %d, DPs: %lluK/%lluK, Time: %llud:%02dh:%02dm:%02ds/%llud:%02dh:%02dm:%02ds\r\n", gGenMode ? "GEN: " : (IsBench ? "BENCH: " : "MAIN: "), speed, gTotalErrors, db.GetBlockCnt()/1000, est_dps_cnt/1000, days, hours, min, sec, exp_days, exp_hours, exp_min, exp_sec);
+	// Show total speed with GPU+CPU breakdown
+	printf("%sSpeed: %d MKeys/s (%d GPU + %d CPU), Err: %d, DPs: %lluK/%lluK, Time: %llud:%02dh:%02dm:%02ds/%llud:%02dh:%02dm:%02ds\r\n",
+		gGenMode ? "GEN: " : (IsBench ? "BENCH: " : "MAIN: "),
+		total_speed, gpu_speed, cpu_speed,
+		gTotalErrors, db.GetBlockCnt()/1000, est_dps_cnt/1000,
+		days, hours, min, sec, exp_days, exp_hours, exp_min, exp_sec);
 }
 
 bool SolvePoint(EcPoint PntToSolve, int Range, int DP, EcInt* pk_res)
