@@ -256,53 +256,27 @@ void RCCpuKang::ProcessKangaroo(int kang_idx)
 		DPBufferIndex++;
 
 		// Restart this kangaroo with new random position using FAST jump-based method
+		// Select starting point based on kangaroo type
+		EcPoint start_point;
 		if (kang->type == TAME)
-		{
-			kang->point = g_G;
-			kang->dist.SetZero();
-			// Do random jumps to scatter
-			int num_jumps = 50 + (kang_idx % 100);
-			for (int j = 0; j < num_jumps; j++)
-			{
-				u32 jmp_idx = (u32)(kang->point.x.data[0]) % JMP_CNT;
-				kang->point = ec.AddPoints(kang->point, EcJumps1[jmp_idx].p);
-				kang->dist.Add(EcJumps1[jmp_idx].dist);
-#if USE_GR_EQUIVALENCE
-				NormalizePoint_GR(&kang->point);
-#endif
-			}
-		}
+			start_point = g_G;
 		else if (kang->type == WILD1)
-		{
-			kang->point = PntA;
-			kang->dist.SetZero();
-			// Do random jumps to scatter
-			int num_jumps = 50 + (kang_idx % 100);
-			for (int j = 0; j < num_jumps; j++)
-			{
-				u32 jmp_idx = (u32)(kang->point.x.data[0]) % JMP_CNT;
-				kang->point = ec.AddPoints(kang->point, EcJumps1[jmp_idx].p);
-				kang->dist.Add(EcJumps1[jmp_idx].dist);
-#if USE_GR_EQUIVALENCE
-				NormalizePoint_GR(&kang->point);
-#endif
-			}
-		}
+			start_point = PntA;
 		else
+			start_point = PntB;
+
+		// Restart from starting point with random jumps to scatter
+		kang->point = start_point;
+		kang->dist.SetZero();
+		int num_jumps = 50 + (kang_idx % 100);
+		for (int j = 0; j < num_jumps; j++)
 		{
-			kang->point = PntB;
-			kang->dist.SetZero();
-			// Do random jumps to scatter
-			int num_jumps = 50 + (kang_idx % 100);
-			for (int j = 0; j < num_jumps; j++)
-			{
-				u32 jmp_idx = (u32)(kang->point.x.data[0]) % JMP_CNT;
-				kang->point = ec.AddPoints(kang->point, EcJumps1[jmp_idx].p);
-				kang->dist.Add(EcJumps1[jmp_idx].dist);
+			u32 jmp_idx = (u32)(kang->point.x.data[0]) % JMP_CNT;
+			kang->point = ec.AddPoints(kang->point, EcJumps1[jmp_idx].p);
+			kang->dist.Add(EcJumps1[jmp_idx].dist);
 #if USE_GR_EQUIVALENCE
-				NormalizePoint_GR(&kang->point);
+			NormalizePoint_GR(&kang->point);
 #endif
-			}
 		}
 	}
 

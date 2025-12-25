@@ -19,28 +19,125 @@ static bool g_lambda_initialized = false;
 // Decompose scalar k into k1, k2 such that k ≡ k1 + k2*λ (mod n)
 // where |k1|, |k2| ≈ √n ≈ 2^128 (half-size scalars)
 //
-// Simplified algorithm using precomputed constants:
-// 1. Compute c1 = ⌊k * b2 / n⌋  (approximated by right shift)
+// Proper Babai nearest plane algorithm using precomputed constants:
+// 1. Compute c1 = ⌊k * b2 / n⌋  (using efficient approximation)
 // 2. Compute c2 = ⌊k * (-b1) / n⌋
 // 3. k1 = k - c1*a1 - c2*a2
 // 4. k2 = -c1*b1 - c2*b2
+//
+// For secp256k1, we use the fact that b2 and -b1 are ~128 bits
+// and n ≈ 2^256, so we can compute c1 and c2 by multiplying
+// the high 128 bits of k by precomputed constants.
 ScalarDecomposition DecomposeScalar(const EcInt& k) {
     ScalarDecomposition result;
 
-    // For secp256k1, we use simplified approximation:
-    // c1 ≈ (k * 0x3086d221a7d46bcde86c90e49284eb15) >> 256
-    // c2 ≈ (k * 0xe4437ed6010e88286f547fa90abfe4c3) >> 256
+    // Helper lambda for 128x128 -> 256-bit multiplication
+    // Multiplies two 128-bit values and returns full 256-bit result
+    auto mul_128x128 = [](u64 a_lo, u64 a_hi, u64 b_lo, u64 b_hi) -> EcInt {
+        EcInt res;
+        res.SetZero();
 
-    // Since k is ~256 bits and multipliers are ~128 bits,
-    // we can approximate by taking high bits of k
+        // Split into 64-bit limbs and compute partial products
+        // (a_hi * 2^64 + a_lo) * (b_hi * 2^64 + b_lo)
 
-    // Simplified approach: use high 128 bits of k for coefficients
-    // c1 ≈ k >> 128  (very rough approximation)
-    EcInt c1, c2;
-    c1 = k;
-    c1.ShiftRight(128);
-    c2 = k;
-    c2.ShiftRight(128);
+        // Partial products using 64x64->128 bit multiplication
+        u64 p0_lo, p0_hi, p1_lo, p1_hi, p2_lo, p2_hi, p3_lo, p3_hi;
+
+        // p0 = a_lo * b_lo
+        #ifdef _MSC_VER
+            p0_lo = _umul128(a_lo, b_lo, &p0_hi);
+        #else
+            __uint128_t p0_full = (__uint128_t)a_lo * b_lo;
+            p0_lo = (u64)p0_full;
+            p0_hi = (u64)(p0_full >> 64);
+        #endif
+
+        // p1 = a_lo * b_hi
+        #ifdef _MSC_VER
+            p1_lo = _umul128(a_lo, b_hi, &p1_hi);
+        #else
+            __uint128_t p1_full = (__uint128_t)a_lo * b_hi;
+            p1_lo = (u64)p1_full;
+            p1_hi = (u64)(p1_full >> 64);
+        #endif
+
+        // p2 = a_hi * b_lo
+        #ifdef _MSC_VER
+            p2_lo = _umul128(a_hi, b_lo, &p2_hi);
+        #else
+            __uint128_t p2_full = (__uint128_t)a_hi * b_lo;
+            p2_lo = (u64)p2_full;
+            p2_hi = (u64)(p2_full >> 64);
+        #endif
+
+        // p3 = a_hi * b_hi
+        #ifdef _MSC_VER
+            p3_lo = _umul128(a_hi, b_hi, &p3_hi);
+        #else
+            __uint128_t p3_full = (__uint128_t)a_hi * b_hi;
+            p3_lo = (u64)p3_full;
+            p3_hi = (u64)(p3_full >> 64);
+        #endif
+
+        // Combine partial products
+        res.data[0] = p0_lo;
+        res.data[1] = p0_hi;
+        res.data[2] = p3_lo;
+        res.data[3] = p3_hi;
+
+        // Add middle terms (p1 + p2) at offset 64 bits
+        u64 carry = 0;
+        u64 sum = res.data[1] + p1_lo + carry;
+        carry = (sum < res.data[1]) ? 1 : 0;
+        res.data[1] = sum;
+
+        sum = res.data[2] + p1_hi + carry;
+        carry = (sum < res.data[2]) ? 1 : 0;
+        res.data[2] = sum;
+        res.data[3] += carry;
+
+        carry = 0;
+        sum = res.data[1] + p2_lo + carry;
+        carry = (sum < res.data[1]) ? 1 : 0;
+        res.data[1] = sum;
+
+        sum = res.data[2] + p2_hi + carry;
+        carry = (sum < res.data[2]) ? 1 : 0;
+        res.data[2] = sum;
+        res.data[3] += carry;
+
+        return res;
+    };
+
+    // Extract high 128 bits of k (this is the key for the Babai rounding)
+    u64 k_hi_lo = k.data[2];
+    u64 k_hi_hi = k.data[3];
+
+    // Precomputed constants for c1 and c2 calculation
+    // These are derived from b2 and -b1 for secp256k1
+    // g1 corresponds to b2: 0x3086d221a7d46bcde86c90e49284eb15
+    u64 g1_lo = 0xe86c90e49284eb15ULL;
+    u64 g1_hi = 0x3086d221a7d46bcdULL;
+
+    // g2 corresponds to -b1: 0xe4437ed6010e88286f547fa90abfe4c3
+    u64 g2_lo = 0x6f547fa90abfe4c3ULL;
+    u64 g2_hi = 0xe4437ed6010e8828ULL;
+
+    // Compute c1 = (k_hi * g1) >> 128 (approximation of (k * b2) / n)
+    EcInt c1_full = mul_128x128(k_hi_lo, k_hi_hi, g1_lo, g1_hi);
+    EcInt c1;
+    c1.data[0] = c1_full.data[2];
+    c1.data[1] = c1_full.data[3];
+    c1.data[2] = 0;
+    c1.data[3] = 0;
+
+    // Compute c2 = (k_hi * g2) >> 128 (approximation of (k * (-b1)) / n)
+    EcInt c2_full = mul_128x128(k_hi_lo, k_hi_hi, g2_lo, g2_hi);
+    EcInt c2;
+    c2.data[0] = c2_full.data[2];
+    c2.data[1] = c2_full.data[3];
+    c2.data[2] = 0;
+    c2.data[3] = 0;
 
     // Compute k1 = k - c1*a1 - c2*a2
     result.k1 = k;
@@ -51,19 +148,28 @@ ScalarDecomposition DecomposeScalar(const EcInt& k) {
     b1 = LATTICE_B1;
     b2 = LATTICE_B2;
 
-    tmp.Mul_u64(a1, c1.data[0]);
-    result.k1.Sub(tmp);
+    // Multiply c1 * a1 (both are ~128 bits, need full multiplication)
+    EcInt c1_a1 = mul_128x128(c1.data[0], c1.data[1], a1.data[0], a1.data[1]);
+    result.k1.Sub(c1_a1);
 
-    tmp.Mul_u64(a2, c2.data[0]);
-    result.k1.Sub(tmp);
+    // Multiply c2 * a2
+    EcInt c2_a2 = mul_128x128(c2.data[0], c2.data[1], a2.data[0], a2.data[1]);
+    result.k1.Sub(c2_a2);
 
     // Compute k2 = -c1*b1 - c2*b2
-    // b1 is already negative, so -b1*c1 = |b1|*c1
-    result.k2.Mul_u64(b1, c1.data[0]);
-    result.k2.Neg();  // Now it's -c1*b1
+    // Note: b1 is stored as positive value but represents negative in the lattice
+    // So -c1*b1 means we multiply c1 by the absolute value
+    EcInt abs_b1;
+    abs_b1.data[0] = 0x6f547fa90abfe4c3ULL;  // |b1| low bits
+    abs_b1.data[1] = 0xe4437ed6010e8828ULL;  // |b1| high bits
+    abs_b1.data[2] = 0;
+    abs_b1.data[3] = 0;
 
-    tmp.Mul_u64(b2, c2.data[0]);
-    result.k2.Sub(tmp);  // k2 = -c1*b1 - c2*b2
+    result.k2 = mul_128x128(c1.data[0], c1.data[1], abs_b1.data[0], abs_b1.data[1]);
+
+    // Subtract c2*b2
+    EcInt c2_b2 = mul_128x128(c2.data[0], c2.data[1], b2.data[0], b2.data[1]);
+    result.k2.Sub(c2_b2);
 
     // Handle signs
     result.k1_neg = false;

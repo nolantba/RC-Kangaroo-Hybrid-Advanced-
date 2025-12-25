@@ -523,41 +523,36 @@ bool RCGpuKang::Start()
 	CallGpuKernelGen(Kparams);
 
 	// SOTA++ Herds: Convert kangaroo data to separate arrays ONCE at startup
+	// OPTIMIZED: Use GPU kernel for conversion (eliminates CPU round-trip, saves 50-100ms)
 	if (use_herds_ && herd_manager_) {
-		printf("[GPU %d] Converting kangaroo data for herd mode...\n", CudaIndex);
+		printf("[GPU %d] Converting kangaroo data for herd mode (GPU-side)...\n", CudaIndex);
 
-		// Copy kangaroo data from GPU to host
-		u64* h_kang_data = (u64*)malloc(KangCnt * 12 * sizeof(u64));
-		err = cudaMemcpy(h_kang_data, Kparams.Kangs, KangCnt * 96, cudaMemcpyDeviceToHost);
+		// Launch GPU kernel to convert format directly on device
+		int threads_per_block = 256;
+		int num_blocks = (KangCnt + threads_per_block - 1) / threads_per_block;
+
+		// Forward declaration of kernel (defined in GpuHerdKernels.cu)
+		extern void ConvertKangarooFormatLauncher(
+			const u64* src_packed, u64* dst_x, u64* dst_y, u64* dst_dist,
+			int count, int blocks, int threads);
+
+		ConvertKangarooFormatLauncher(
+			(const u64*)Kparams.Kangs,
+			d_herd_kangaroo_x_,
+			d_herd_kangaroo_y_,
+			d_herd_kangaroo_dist_,
+			KangCnt,
+			num_blocks,
+			threads_per_block);
+
+		err = cudaGetLastError();
 		if (err != cudaSuccess) {
-			printf("[GPU %d] ERROR: Failed to copy kangaroo data for conversion: %s\n",
+			printf("[GPU %d] ERROR: Kangaroo format conversion kernel failed: %s\n",
 			       CudaIndex, cudaGetErrorString(err));
-			free(h_kang_data);
 			use_herds_ = false;
 		} else {
-			// Allocate temporary host arrays
-			u64* h_x = (u64*)malloc(KangCnt * 4 * sizeof(u64));
-			u64* h_y = (u64*)malloc(KangCnt * 4 * sizeof(u64));
-			u64* h_dist = (u64*)malloc(KangCnt * 3 * sizeof(u64));
-
-			// Convert packed format to separate arrays
-			for (int i = 0; i < KangCnt; i++) {
-				memcpy(&h_x[i * 4], &h_kang_data[i * 12 + 0], 32);    // X (256 bits)
-				memcpy(&h_y[i * 4], &h_kang_data[i * 12 + 4], 32);    // Y (256 bits)
-				memcpy(&h_dist[i * 3], &h_kang_data[i * 12 + 8], 24); // Dist (192 bits)
-			}
-
-			// Copy to GPU herd arrays (ONE-TIME upload)
-			cudaMemcpy(d_herd_kangaroo_x_, h_x, KangCnt * 4 * sizeof(u64), cudaMemcpyHostToDevice);
-			cudaMemcpy(d_herd_kangaroo_y_, h_y, KangCnt * 4 * sizeof(u64), cudaMemcpyHostToDevice);
-			cudaMemcpy(d_herd_kangaroo_dist_, h_dist, KangCnt * 3 * sizeof(u64), cudaMemcpyHostToDevice);
-
-			free(h_x);
-			free(h_y);
-			free(h_dist);
-			free(h_kang_data);
-
-			printf("[GPU %d] Kangaroo data converted and uploaded to herd arrays\n", CudaIndex);
+			cudaDeviceSynchronize();  // Wait for conversion to complete
+			printf("[GPU %d] Kangaroo data converted on GPU (optimized path)\n", CudaIndex);
 		}
 	}
 

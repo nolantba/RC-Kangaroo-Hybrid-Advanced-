@@ -52,13 +52,6 @@ typedef char i8;
 
 #define MAX_GPU_CNT			32
 
-//must be divisible by MD_LEN
-// BALANCED: Optimized to reduce launch overhead without OOM
-// 1000 → 2400 gave ~3% gain, tested and stable
-// Higher values (4800, 9600) cause JumpsList buffer OOM on 12GB cards
-// 2400 = sweet spot for RTX 3060 (12GB VRAM)
-#define STEP_CNT			2400  // Proven stable, good performance
-
 #define JMP_CNT				512
 
 //use different options for cards older than RTX 40xx
@@ -71,15 +64,22 @@ typedef char i8;
 		//can be 8, 16, 24, 32, 40, 48, 56, 64
 		// Optimized for RTX 3060: 48 provides best balance of occupancy and ILP
 		// Previous: 64 (good for RTX 30xx), Test showed 48 is 3-5% faster
-		#define PNT_GROUP_CNT		48  // Was 64	
+		#define PNT_GROUP_CNT		48  // Was 64
+		// RTX 30xx (Ampere): Balanced for 12GB VRAM
+		// 2400 = sweet spot for RTX 3060/3070/3080
+		#define STEP_CNT			2400
 	#else
 		#define BLOCK_SIZE			256
 		//can be 8, 16, 24, 32
 		#define PNT_GROUP_CNT		24
+		// RTX 40xx (Ada Lovelace): Higher memory bandwidth, can handle more
+		// 3600 = optimized for RTX 4090/4080 (reduces kernel launch overhead)
+		#define STEP_CNT			3600
 	#endif
 #else //CPU, fake values
 	#define BLOCK_SIZE			512
 	#define PNT_GROUP_CNT		64
+	#define STEP_CNT			2400
 #endif
 
 // kang type

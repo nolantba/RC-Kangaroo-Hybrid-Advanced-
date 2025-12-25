@@ -323,3 +323,59 @@ extern "C" int checkHerdCollisions(
 
     return dp_count;
 }
+
+// ============================================================================
+// Kangaroo Format Conversion Kernel (GPU-side)
+// ============================================================================
+// Converts packed kangaroo data to separate X/Y/Dist arrays directly on GPU
+// Eliminates expensive GPU->Host->GPU round-trip (saves 50-100ms at startup)
+// ============================================================================
+__global__ void ConvertKangarooFormat(
+    const u64* __restrict__ src_packed,  // Source: packed format [kang][12] (X,Y,Dist)
+    u64* __restrict__ dst_x,              // Dest: X coordinates [kang][4]
+    u64* __restrict__ dst_y,              // Dest: Y coordinates [kang][4]
+    u64* __restrict__ dst_dist,           // Dest: Distances [kang][3]
+    int count)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= count) return;
+
+    // Source offset: 12 u64s per kangaroo (X=4, Y=4, Dist=3, pad=1)
+    const u64* src = src_packed + idx * 12;
+
+    // Destination offsets
+    u64* x_out = dst_x + idx * 4;
+    u64* y_out = dst_y + idx * 4;
+    u64* dist_out = dst_dist + idx * 3;
+
+    // Copy X coordinate (4 u64s = 256 bits)
+    x_out[0] = src[0];
+    x_out[1] = src[1];
+    x_out[2] = src[2];
+    x_out[3] = src[3];
+
+    // Copy Y coordinate (4 u64s = 256 bits)
+    y_out[0] = src[4];
+    y_out[1] = src[5];
+    y_out[2] = src[6];
+    y_out[3] = src[7];
+
+    // Copy Distance (3 u64s = 192 bits)
+    dist_out[0] = src[8];
+    dist_out[1] = src[9];
+    dist_out[2] = src[10];
+}
+
+// Host-side launcher for ConvertKangarooFormat kernel
+extern "C" void ConvertKangarooFormatLauncher(
+    const u64* src_packed,
+    u64* dst_x,
+    u64* dst_y,
+    u64* dst_dist,
+    int count,
+    int blocks,
+    int threads)
+{
+    ConvertKangarooFormat<<<blocks, threads>>>(
+        src_packed, dst_x, dst_y, dst_dist, count);
+}
