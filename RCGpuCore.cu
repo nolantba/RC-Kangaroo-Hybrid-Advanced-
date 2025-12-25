@@ -188,29 +188,20 @@ __global__ void KernelA(const TKparams Kparams)
 		u64* jmp_table;
 		__align__(16) u64 jmp_x[4];
 		__align__(16) u64 jmp_y[4];
-
-		// Cache jump indices and table pointers to avoid redundant computation
-		u16 cached_jmp_ind[PNT_GROUP_CNT];
-		u64* cached_jmp_table[PNT_GROUP_CNT];
-
+		
 		//first group
 		LOAD_VAL_256(x, L2x, 0);
 		jmp_ind = (x[0] + herd_bias) & (JMP_CNT - 1);  // HERD BIAS ADDED
 		jmp_table = ((L1S2 >> 0) & 1) ? jmp2_table : jmp1_table;
-		cached_jmp_ind[0] = jmp_ind;
-		cached_jmp_table[0] = jmp_table;
 		Copy_int4_x2(jmp_x, jmp_table + 8 * jmp_ind);
 		SubModP(inverse, x, jmp_x);
 		SAVE_VAL_256(L2s, inverse, 0);
-		//the rest - unrolled by 2 for better instruction-level parallelism
-		#pragma unroll 2
+		//the rest
 		for (int group = 1; group < PNT_GROUP_CNT; group++)
 		{
 			LOAD_VAL_256(x, L2x, group);
 			jmp_ind = (x[0] + herd_bias) & (JMP_CNT - 1);  // HERD BIAS ADDED
 			jmp_table = ((L1S2 >> group) & 1) ? jmp2_table : jmp1_table;
-			cached_jmp_ind[group] = jmp_ind;
-			cached_jmp_table[group] = jmp_table;
 			Copy_int4_x2(jmp_x, jmp_table + 8 * jmp_ind);
 			SubModP(tmp, x, jmp_x);
 			MulModP(inverse, inverse, tmp);
@@ -226,11 +217,10 @@ __global__ void KernelA(const TKparams Kparams)
             __align__(16) u64 y0[4];
             __align__(16) u64 dxs[4];
 
-			// Reuse cached values instead of recomputing
 			LOAD_VAL_256(x0, L2x, group);
             LOAD_VAL_256(y0, L2y, group);
-			jmp_ind = cached_jmp_ind[group];  // Use cached value!
-			jmp_table = cached_jmp_table[group];  // Use cached pointer!
+			jmp_ind = (x0[0] + herd_bias) & (JMP_CNT - 1);  // HERD BIAS ADDED
+			jmp_table = ((L1S2 >> group) & 1) ? jmp2_table : jmp1_table;
 			Copy_int4_x2(jmp_x, jmp_table + 8 * jmp_ind);
 			Copy_int4_x2(jmp_y, jmp_table + 8 * jmp_ind + 4);
 
@@ -246,16 +236,15 @@ __global__ void KernelA(const TKparams Kparams)
 
 #if USE_SOTA_PLUS
 			// SOTA+: compute BOTH X-coordinates, choose best, then compute Y once
-			// Optimized to avoid redundant slope computation
 			__align__(16) u64 jmp_y_neg[4];
 			__align__(16) u64 x3_plus[4], x3_minus[4];
-			__align__(16) u64 slope_plus[4], slope_minus[4];
 
 			// --- P + Jump ---
-			// Compute and SAVE slope_plus for later use
+			// tmp  = slope_plus
+			// tmp2 = scratch
 			SubModP(tmp2, y0, jmp_y);        // tmp2 = (y0 - jmp_y)
-			MulModP(slope_plus, tmp2, dxs);  // slope_plus = (y0 - jmp_y) * dx^-1
-			SqrModP(tmp2, slope_plus);       // tmp2 = slope_plus^2
+			MulModP(tmp, tmp2, dxs);         // tmp  = slope_plus
+			SqrModP(tmp2, tmp);              // tmp2 = slope_plus^2
 			SubModP(x3_plus, tmp2, jmp_x);
 			SubModP(x3_plus, x3_plus, x0);   // x3_plus = x(P+J)
 
@@ -263,30 +252,40 @@ __global__ void KernelA(const TKparams Kparams)
 			Copy_u64_x4(jmp_y_neg, jmp_y);
 			NegModP(jmp_y_neg);
 
-			// Compute and SAVE slope_minus for later use
-			SubModP(tmp2, y0, jmp_y_neg);       // tmp2 = (y0 - (-jmp_y))
-			MulModP(slope_minus, tmp2, dxs);    // slope_minus = (y0 + jmp_y) * dx^-1
-			SqrModP(tmp2, slope_minus);         // tmp2 = slope_minus^2
+			SubModP(tmp2, y0, jmp_y_neg);    // tmp2 = (y0 - (-jmp_y))
+			MulModP(tmp, tmp2, dxs);         // tmp  = slope_minus
+			SqrModP(tmp2, tmp);              // tmp2 = slope_minus^2
 			SubModP(x3_minus, tmp2, jmp_x);
-			SubModP(x3_minus, x3_minus, x0);    // x3_minus = x(P-J)
+			SubModP(x3_minus, x3_minus, x0); // x3_minus = x(P-J)
 
 			// --- Choose direction based on DP likelihood (leading zeros) ---
 			int zeros_plus  = clz256(x3_plus);
 			int zeros_minus = clz256(x3_minus);
 			bool use_plus   = (zeros_plus >= zeros_minus);
 
-			// Commit chosen X-coordinate
-			Copy_u64_x4(x, use_plus ? x3_plus : x3_minus);
+			if (use_plus) {
+				// Commit P + J
+				Copy_u64_x4(x, x3_plus);
 
-			// Use saved slope to compute Y (NO recomputation needed!)
-			Copy_u64_x4(tmp, use_plus ? slope_plus : slope_minus);
-			SubModP(y, x0, x);
-			MulModP(y, y, tmp);
-			SubModP(y, y, y0);
+				// Recompute slope_plus into tmp, then compute Y
+				SubModP(tmp2, y0, jmp_y);
+				MulModP(tmp, tmp2, dxs);     // tmp = slope_plus
 
-			// Set flag if we used the minus direction
-			if (!use_plus) {
+				SubModP(y, x0, x);
+				MulModP(y, y, tmp);
+				SubModP(y, y, y0);
+			} else {
+				// Commit P - J
+				Copy_u64_x4(x, x3_minus);
 				jmp_ind |= INV_FLAG;
+
+				// Recompute slope_minus into tmp, then compute Y
+				SubModP(tmp2, y0, jmp_y_neg);
+				MulModP(tmp, tmp2, dxs);     // tmp = slope_minus
+
+				SubModP(y, x0, x);
+				MulModP(y, y, tmp);
+				SubModP(y, y, y0);
 			}
 #else
 			// Traditional SOTA: Single direction based on Y parity
@@ -312,63 +311,38 @@ __global__ void KernelA(const TKparams Kparams)
 			SAVE_VAL_256(L2x, x, group);
 			SAVE_VAL_256(L2y, y, group);
 
-#if USE_SOTA_PLUS
-			// SOTA+ optimized: L1S2 loop detection disabled (bidirectional choice prevents cycles)
-			// Skip the check entirely to reduce overhead
-			if ((L1S2 >> group) & 1) {
-				L1S2 &= ~(1u << group);
-				jmp_ind |= JMP2_FLAG;
-			}
-#else
-			// Traditional: Check L1S2 loop detection less frequently (1 in 8 iterations)
-			// Loops are rare (~1 in 1024), so checking every iteration wastes cycles
-			if (((L1S2 >> group) & 1) == 0 && ((step_ind & 0x7) == 0)) //check every 8th step
+			if (((L1S2 >> group) & 1) == 0) //normal mode, check L1S2 loop
 			{
 				u32 jmp_next = x[0] & (JMP_CNT - 1);
+#if USE_SOTA_PLUS
+				// SOTA+: Disable L1S2 cycle detection
+				// SOTA+ chooses direction based on leading zeros (non-deterministic),
+				// making traditional cycle detection incompatible.
+				// The bidirectional choice itself prevents most cycles naturally.
+				// Keep L1S2=0 (never trigger escape mode)
+				(void)jmp_next; // Silence unused warning
+#else
+				// Traditional: Check based on Y parity
 				jmp_next |= ((u32)y[0] & 1) ? 0 : INV_FLAG; //inverted
 				L1S2 |= (jmp_ind == jmp_next) ? (1u << group) : 0; //loop L1S2 detected
+#endif
 			}
-			else if ((L1S2 >> group) & 1)
+			else
 			{
 				L1S2 &= ~(1u << group);
 				jmp_ind |= JMP2_FLAG;
 			}
-#endif
-
-			// Warp-aggregated DP storage (reduces atomic contention by 32x)
-			bool is_dp = ((x[3] & dp_mask64) == 0);
-			u32 kang_ind = (THREAD_X + BLOCK_X * BLOCK_SIZE) * PNT_GROUP_CNT + group;
-
-			if (is_dp)
+			
+			if ((x[3] & dp_mask64) == 0)
 			{
-				// Warp-level aggregation for atomic operations
-				const unsigned active = __activemask();
-				const int lane = threadIdx.x & 31;
-				const int leader = __ffs(active) - 1;
-				unsigned mask_dp = __ballot_sync(active, is_dp);
-				int dp_count = __popc(mask_dp);
-
-				if (dp_count > 0) {
-					// Only leader performs atomic for entire warp
-					u32 base_ind = 0;
-					if (lane == leader) {
-						base_ind = atomicAdd(Kparams.DPTable + kang_ind, dp_count);
-					}
-					// Broadcast base index to all threads in warp
-					base_ind = __shfl_sync(active, base_ind, leader);
-
-					// Calculate this thread's position within the reserved block
-					unsigned lane_mask = mask_dp & ((1u << lane) - 1u);
-					unsigned pos = __popc(lane_mask);
-					u32 ind = base_ind + pos;
-
-					// Write DP if within bounds
-					if (ind < DPTABLE_MAX_CNT)
-					{
-						int4* dst = (int4*)(Kparams.DPTable + Kparams.KangCnt + (kang_ind * DPTABLE_MAX_CNT + ind) * 4);
-						dst[0] = ((int4*)x)[0];
-					}
-				}
+				u32 kang_ind = (THREAD_X + BLOCK_X * BLOCK_SIZE) * PNT_GROUP_CNT + group;
+				u32 ind = atomicAdd(Kparams.DPTable + kang_ind, 1);
+				// Only write if within bounds (prevents buffer overflow)
+			if (ind < DPTABLE_MAX_CNT)
+			{
+				int4* dst = (int4*)(Kparams.DPTable + Kparams.KangCnt + (kang_ind * DPTABLE_MAX_CNT + ind) * 4);
+				dst[0] = ((int4*)x)[0];
+			}
 			}
 
 			lds_jlist[8 * THREAD_X + (group % 8)] = jmp_ind;
