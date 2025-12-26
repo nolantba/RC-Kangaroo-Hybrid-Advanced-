@@ -72,6 +72,10 @@ AutoSaveManager* g_autosave = nullptr;
 std::string g_work_filename;
 uint64_t g_autosave_interval = 60;  // Default: 60 seconds
 
+// Tames auto-save support
+time_t g_last_tames_save = 0;
+uint64_t g_tames_autosave_interval = 60;  // Default: 60 seconds
+
 // SOTA++ Herds mode
 bool g_use_herds = false;
 time_t g_start_time = 0;
@@ -666,11 +670,36 @@ bool SolvePoint(EcPoint PntToSolve, int Range, int DP, EcInt* pk_res)
 
 			tm_stats = GetTickCount64();
 
-			// Auto-save check
+			// Auto-save check for work files
 			if (g_autosave && g_start_time > 0)
 			{
 				uint64_t elapsed = (uint64_t)(time(NULL) - g_start_time);
 				g_autosave->CheckAndSave(PntTotalOps, PntIndex, gTotalErrors, elapsed);
+			}
+
+			// Auto-save check for tames files
+			if (gGenMode && gTamesFileName[0])
+			{
+				time_t current_time = time(NULL);
+				if (g_last_tames_save == 0)
+				{
+					// Initialize on first check
+					g_last_tames_save = current_time;
+				}
+				else if ((current_time - g_last_tames_save) >= g_tames_autosave_interval)
+				{
+					printf("Auto-saving tames file...\r\n");
+					db.Header[0] = gRange;
+					if (db.SaveToFile(gTamesFileName))
+					{
+						printf("Tames auto-saved (%llu DPs)\r\n", (unsigned long long)db.GetBlockCnt());
+						g_last_tames_save = current_time;
+					}
+					else
+					{
+						printf("WARNING: Tames auto-save failed\r\n");
+					}
+				}
 			}
 		}
 
@@ -753,6 +782,21 @@ void SignalHandler(int signum)
 		else
 		{
 			printf("ERROR: Failed to save work file!\r\n");
+		}
+	}
+
+	// Save tames file if in generation mode
+	if (gGenMode && gTamesFileName[0])
+	{
+		printf("Saving tames file...\r\n");
+		db.Header[0] = gRange;
+		if (db.SaveToFile(gTamesFileName))
+		{
+			printf("Tames file saved successfully (%llu DPs)\r\n", (unsigned long long)db.GetBlockCnt());
+		}
+		else
+		{
+			printf("ERROR: Failed to save tames file!\r\n");
 		}
 	}
 
@@ -890,6 +934,24 @@ bool ParseCommandLine(int argc, char* argv[])
 			}
 			g_autosave_interval = val;
 			printf("Auto-save interval: %llu seconds\r\n", (unsigned long long)g_autosave_interval);
+		}
+		else
+		if (strcmp(argument, "-tames-autosave") == 0)
+		{
+			if (ci >= argc)
+			{
+				printf("error: missed value after -tames-autosave option\r\n");
+				return false;
+			}
+			int val = atoi(argv[ci]);
+			ci++;
+			if (val < 0)
+			{
+				printf("error: invalid value for -tames-autosave option (must be >= 0)\r\n");
+				return false;
+			}
+			g_tames_autosave_interval = val;
+			printf("Tames auto-save interval: %llu seconds\r\n", (unsigned long long)g_tames_autosave_interval);
 		}
 		else
 		if (strcmp(argument, "-herds") == 0)
@@ -1195,7 +1257,13 @@ int main(int argc, char* argv[])
 	else
 	{
 		if (gGenMode)
+		{
 			printf("\r\nTAMES GENERATION MODE\r\n");
+			if (g_tames_autosave_interval > 0)
+			{
+				printf("Tames auto-save enabled: every %llu seconds\r\n", (unsigned long long)g_tames_autosave_interval);
+			}
+		}
 		else
 			printf("\r\nBENCHMARK MODE\r\n");
 		//solve points, show K
