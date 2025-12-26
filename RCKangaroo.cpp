@@ -355,20 +355,24 @@ void ShowStats(u64 tm_start, double exp_ops, double dp_val)
 	}
 #endif
 
-	// Calculate REAL speed based on actual wall-clock time and operations
+	// Calculate elapsed time
 	u64 elapsed_ms = GetTickCount64() - tm_start;
 	if (elapsed_ms == 0) elapsed_ms = 1; // Avoid division by zero
 
-	// Real speed = total ops / elapsed seconds / 1 million (for MKeys/s)
-	int total_speed = (int)(PntTotalOps / (elapsed_ms / 1000.0) / 1000000.0);
-
-	// Get CPU speed breakdown from GPU monitor
+	// Get REAL-TIME speeds from GPU/CPU monitors (rolling average, not cumulative)
+	int gpu_speed = 0;
 	int cpu_speed = 0;
 	if (g_gpu_monitor) {
 		SystemStats sys_stats = g_gpu_monitor->GetSystemStats();
+		// Sum up individual GPU speeds (real-time rolling average)
+		for (int i = 0; i < GpuCnt; i++) {
+			if (GpuKangs[i]) {
+				gpu_speed += GpuKangs[i]->GetStatsSpeed();
+			}
+		}
 		cpu_speed = (int)sys_stats.cpu_speed_mkeys;
 	}
-	int gpu_speed = total_speed - cpu_speed;
+	int total_speed = gpu_speed + cpu_speed;
 
 	u64 est_dps_cnt = (u64)(exp_ops / dp_val);
 	u64 exp_sec_total = 0xFFFFFFFFFFFFFFFFull;
