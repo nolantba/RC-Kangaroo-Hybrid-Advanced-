@@ -37,27 +37,40 @@ The puzzle creator made a **1000 satoshi outgoing transaction** from this addres
 
 ### Operations Required
 
-**Theoretical operations:** ~2^67 × 1.15 = ~1.69 × 10^20 operations (for 134-bit range)
+**Theoretical operations:** ~2^67 × 1.15 = ~1.697 × 10^20 operations (for 134-bit range)
 
-**Time estimates (Single GPU @ 20 GKeys/s):**
+### Time Estimates (Average - Probabilistic Algorithm)
 
-| Configuration | Estimated Time |
-|---------------|----------------|
-| No tames | ~2.1 billion years |
-| 10x tames | ~210 million years |
-| 30x tames | ~70 million years |
-| 100x tames | ~21 million years |
+**IMPORTANT:** These are AVERAGE times. Actual time can be 50% faster or 2× slower due to luck!
 
-### With Distributed Computing
+**Direct Solving (Recommended for Solo):**
 
-| GPU Count | Time (30x tames) |
-|-----------|------------------|
-| 1 GPU | ~70 million years |
-| 100 GPUs | ~700,000 years |
-| 10,000 GPUs | ~7,000 years |
-| 1,000,000 GPUs | ~70 years |
+| GPU Speed | Average Solve Time |
+|-----------|-------------------|
+| 6.74 GK/s (3× RTX 3060) | ~798 years |
+| 20 GK/s (High-end single GPU) | ~269 years |
+| 67.4 GK/s (10× 3060 Ti) | ~80 years |
+| 200 GK/s (Distributed) | ~27 years |
 
-**Bottom line:** This requires **massive distributed effort** or breakthrough algorithms.
+**With 30x Pre-Generated Tames (ONLY for teams/multiple keys):**
+
+| Configuration | Time | When Useful |
+|---------------|------|-------------|
+| Generate 30x tames | ~26 years @ 6.74 GK/s | Team shares tames file |
+| Solve with tames | ~532 years @ 6.74 GK/s | Each team member runs wilds |
+| **Total (Solo)** | **~558 years** | ❌ SLOWER than direct! |
+
+**WARNING:** For solo solving, generating 30x tames makes you **slower** because you do 30× the tames work but only solve 1 key!
+
+### Distributed Computing (Direct Solving)
+
+| GPU Count | Combined Speed | Average Time |
+|-----------|---------------|--------------|
+| 10 GPUs | ~67 GK/s | ~80 years |
+| 100 GPUs | ~670 GK/s | ~8 years |
+| 1,000 GPUs | ~6.7 TK/s | ~292 days |
+
+**Bottom line:** Solo = not feasible. Requires **large distributed team** or extreme luck.
 
 ---
 
@@ -85,21 +98,38 @@ Based on your system (needed DP 20 for 93-bit with overflow):
 
 ## Commands
 
-### Generate 30x Tames for Puzzle 135
+### ✅ RECOMMENDED: Direct Solving (Solo/Small Teams)
 
+**For solo solving or small teams, DO NOT generate tames - just solve directly:**
+
+```bash
+./rckangaroo \
+  -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
+  -range 134 \
+  -dp 24
+```
+
+**Why this is optimal:**
+- Runs both tames (33%) and wilds (67%) automatically
+- K-factor ≈ 1.15 (optimal efficiency)
+- No wasted time generating tames you'll only use once
+- Average: ~798 years @ 6.74 GK/s (still extremely long but fastest option)
+
+---
+
+### 🔄 ALTERNATIVE: Generate Tames (Teams/Multiple Keys ONLY)
+
+**⚠️ Only generate 30x tames if:**
+- You have 30+ team members to share the tames file with
+- You plan to solve 30+ different keys in the same 134-bit range
+- You're contributing to a community tames pool
+
+**Generate tames:**
 ```bash
 ./rckangaroo -tames tames135.dat -range 134 -dp 24 -max 30 -tames-autosave 300
 ```
 
-**Flags explained:**
-- `-tames tames135.dat` = Save tames to this file
-- `-range 134` = Search 134-bit keyspace (2^134 to 2^135-1) - CORRECT!
-- `-dp 24` = Use 24 bits for distinguished points (prevents overflow)
-- `-max 30` = Generate 30x theoretical tames
-- `-tames-autosave 300` = Auto-save every 5 minutes (300 seconds)
-
-### Solve With Tames (When Ready)
-
+**Each team member solves with shared tames:**
 ```bash
 ./rckangaroo \
   -tames tames135.dat \
@@ -108,14 +138,11 @@ Based on your system (needed DP 20 for 93-bit with overflow):
   -dp 24
 ```
 
-### Solve Without Tames (Direct)
-
-```bash
-./rckangaroo \
-  -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
-  -range 134 \
-  -dp 24
-```
+**Team Benefit:**
+- 1 person generates tames (~26 years @ 6.74 GK/s)
+- 30 people solve with shared tames in parallel (~532 years each)
+- Combined speedup: Finding solution in ~18 years instead of 798 years
+- **Requires coordination and trust!**
 
 ---
 
@@ -275,12 +302,17 @@ ls -lh tames135.dat
 
 ### Resume After Crash
 
-Just re-run the same command:
+**If you were direct solving (recommended):**
 ```bash
-./rckangaroo -tames tames135.dat -range 134 -dp 24 -max 30 -tames-autosave 300
+# Just re-run - it continues automatically
+./rckangaroo -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -range 134 -dp 24
 ```
 
-It should resume from last auto-save.
+**If you were generating tames (teams only):**
+```bash
+# Resumes from last auto-save
+./rckangaroo -tames tames135.dat -range 134 -dp 24 -max 30 -tames-autosave 300
+```
 
 ### Backup Tames File
 
@@ -293,31 +325,64 @@ cp tames135.dat tames135_backup_$(date +%Y%m%d).dat
 
 ## Final Recommendations
 
-1. **Start with DP 24** - Monitor for overflow
-2. **Let it run for 1 week** - See how much progress you make
-3. **Calculate remaining time** - Decide if it's worth continuing
-4. **Consider sharing tames** - Team effort has better odds
-5. **Set realistic expectations** - This is a VERY hard puzzle
+### For Solo Miners
+
+1. **Use direct solving** - Don't waste time generating tames
+2. **Start with DP 24** - Monitor for overflow in first 5-10 minutes
+3. **Set realistic expectations** - ~798 years average @ 6.74 GK/s
+4. **Consider luck factor** - Could find in days (0.1% chance) or never
+5. **Have a backup plan** - Maybe tackle Puzzle 93 instead?
+
+### For Team Efforts
+
+1. **Coordinate tames generation** - 1 person generates, all share
+2. **Distribute work** - Each person runs wilds with shared tames
+3. **Combine resources** - 100+ GPUs needed for reasonable timeframe
+4. **Use cloud computing** - Rent GPUs when electricity is cheap
+5. **Share the reward** - Agree on split before starting
+
+### Reality Check
+
+**At 6.74 GK/s solo:**
+- Average: 798 years
+- Best case (extreme luck): Days to weeks
+- Worst case (bad luck): Never
+
+**Better alternatives:**
+- **Puzzle 93**: ~2.4 years average (with 30x tames: ~29 days)
+- **Puzzle 70**: ~2.7 hours average
+- **Puzzle 66**: ~21 minutes average
+
+**Consider joining a distributed team for Puzzle 135 instead of solo mining!**
 
 ---
 
 ## Quick Reference
 
-**Start command:**
+**✅ RECOMMENDED - Direct Solving (Solo):**
+```bash
+./rckangaroo -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 -range 134 -dp 24
+```
+
+**🔄 ALTERNATIVE - Tames Generation (Teams Only):**
 ```bash
 ./rckangaroo -tames tames135.dat -range 134 -dp 24 -max 30 -tames-autosave 300
 ```
 
 **Public Key:** `02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16`
 
+**Average Time:**
+- Solo @ 6.74 GK/s: ~798 years (direct solving)
+- Team @ 200 GK/s: ~27 years (100+ GPUs distributed)
+
 **Monitor:** First 5-10 minutes for overflow warnings
 
-**Auto-save:** Every 5 minutes
-
-**Ctrl+C:** Saves before exit
-
-**Resume:** Re-run same command
+**Reality Check:**
+- This puzzle is effectively impossible for solo miners
+- Requires massive distributed effort (hundreds of GPUs)
+- Or extreme luck (could find in days, or never)
+- Consider joining a team or tackling easier puzzles
 
 ---
 
-Good luck! 🍀 This is a marathon, not a sprint!
+Good luck! 🍀 This is a **century-long marathon**, not a sprint!
