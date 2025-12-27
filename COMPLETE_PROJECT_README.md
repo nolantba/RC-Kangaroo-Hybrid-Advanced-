@@ -965,13 +965,13 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### Basic Configuration
 ```bash
 # Standard mode (no herds)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64
 
 # With work file save/resume
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
@@ -982,7 +982,7 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### With SOTA++ Herds (Recommended)
 ```bash
 # Herds mode for better coverage
-./rckangaroo -herds -range 135 \
+./rckangaroo -herds -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
@@ -993,21 +993,21 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### DP Bit Experimentation
 ```bash
 # DP 24 (more DPs, faster detection, more RAM)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 24 -gpu 012 -cpu 64 \
   -workfile puzzle135_dp24.work -autosave 300
 
 # DP 28 (balanced, recommended)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
   -workfile puzzle135_dp28.work -autosave 300
 
 # DP 38 (fewer DPs, slower detection, less RAM)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 38 -gpu 012 -cpu 64 \
@@ -1059,7 +1059,7 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### Resume from Saved State
 ```bash
 # Automatically resumes if puzzle135.work exists
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
@@ -1088,28 +1088,28 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### Select Specific GPUs
 ```bash
 # Use only GPU 0 and 2
-./rckangaroo -gpu 02 -range 135 ...
+./rckangaroo -gpu 02 -range 134 ...
 
 # Use all 3 GPUs
-./rckangaroo -gpu 012 -range 135 ...
+./rckangaroo -gpu 012 -range 134 ...
 
 # Use only GPU 1
-./rckangaroo -gpu 1 -range 135 ...
+./rckangaroo -gpu 1 -range 134 ...
 ```
 
 #### CPU Thread Configuration
 ```bash
 # No CPU workers (GPU-only)
-./rckangaroo -cpu 0 -gpu 012 -range 135 ...
+./rckangaroo -cpu 0 -gpu 012 -range 134 ...
 
 # 32 CPU threads
-./rckangaroo -cpu 32 -gpu 012 -range 135 ...
+./rckangaroo -cpu 32 -gpu 012 -range 134 ...
 
 # 64 CPU threads (recommended for dual Xeon)
-./rckangaroo -cpu 64 -gpu 012 -range 135 ...
+./rckangaroo -cpu 64 -gpu 012 -range 134 ...
 
 # 128 CPU threads (maximum supported)
-./rckangaroo -cpu 128 -gpu 012 -range 135 ...
+./rckangaroo -cpu 128 -gpu 012 -range 134 ...
 ```
 
 ### Benchmark Mode
@@ -1129,7 +1129,7 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 
 ```bash
 # Stop after 1 trillion operations (for testing)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
@@ -2087,7 +2087,7 @@ undefined reference to `cudaXXX`
 4. **Use SOTA++ Herds**
    ```bash
    # Better coverage for large puzzles:
-   ./rckangaroo -herds -range 135 ...
+   ./rckangaroo -herds -range 134 ...
    ```
 
 ### For Memory Efficiency
@@ -2334,7 +2334,7 @@ make clean
 make SM=86 USE_JACOBIAN=1 USE_SOTA_PLUS=1 PROFILE=release USE_NVML=1 -j
 
 # 3. Run puzzle 135 with save/resume
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \

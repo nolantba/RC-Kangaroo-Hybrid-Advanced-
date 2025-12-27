@@ -18,16 +18,16 @@ This is **CRITICAL** for puzzle 135+ which can take years to solve.
 
 ```bash
 # Start new solve with auto-save every 60 seconds
-./rckangaroo -range 135 -start [start] -pubkey [key] \
+./rckangaroo -range 134 -start [start] -pubkey [key] \
   -workfile puzzle135.work -autosave 60
 
 # Resume from checkpoint after interruption
-./rckangaroo -range 135 -start [start] -pubkey [key] \
+./rckangaroo -range 134 -start [start] -pubkey [key] \
   -workfile puzzle135.work
 
 # Merge work from 10 machines
 ./rckangaroo -merge machine*.work -output combined.work
-./rckangaroo -range 135 -workfile combined.work
+./rckangaroo -range 134 -workfile combined.work
 ```
 
 ---
@@ -100,7 +100,7 @@ struct DPRecord {
 **Solution**:
 ```bash
 # Start with auto-save every 5 minutes (300 seconds)
-./rckangaroo -range 135 -start [start] -pubkey [pubkey] \
+./rckangaroo -range 134 -start [start] -pubkey [pubkey] \
   -dp 20 -cpu 64 -workfile puzzle135.work -autosave 300
 ```
 
@@ -130,7 +130,7 @@ struct DPRecord {
 # ETA: 11 days, 8 hours remaining
 
 # Resume from checkpoint
-./rckangaroo -range 135 -workfile puzzle135.work
+./rckangaroo -range 134 -workfile puzzle135.work
 ```
 
 **Result**: Continues from 2^72.43 operations, no work lost!
@@ -144,11 +144,11 @@ struct DPRecord {
 **Solution** (Run on each machine):
 ```bash
 # Machine 1
-./rckangaroo -range 135 -start [start] -pubkey [pubkey] \
+./rckangaroo -range 134 -start [start] -pubkey [pubkey] \
   -dp 20 -workfile machine001.work -autosave 60
 
 # Machine 2
-./rckangaroo -range 135 -start [start] -pubkey [pubkey] \
+./rckangaroo -range 134 -start [start] -pubkey [pubkey] \
   -dp 20 -workfile machine002.work -autosave 60
 
 # ... (Machines 3-100)
@@ -178,7 +178,7 @@ cd /merge
 ```bash
 # Distribute merged file back to all machines
 scp puzzle135_merged.work machine001:/work/
-./rckangaroo -range 135 -workfile puzzle135_merged.work
+./rckangaroo -range 134 -workfile puzzle135_merged.work
 ```
 
 ---
@@ -190,11 +190,11 @@ scp puzzle135_merged.work machine001:/work/
 **Solution**:
 ```bash
 # Old system (2 GPUs, after 1 year)
-./rckangaroo -range 135 -workfile puzzle135.work
+./rckangaroo -range 134 -workfile puzzle135.work
 # ^C (interrupt)
 
 # New system (12 GPUs)
-./rckangaroo -range 135 -workfile puzzle135.work -gpu 12
+./rckangaroo -range 134 -workfile puzzle135.work -gpu 12
 
 # Continues from same progress, but 6x faster!
 ```
@@ -310,11 +310,11 @@ ERROR: Work file parameter mismatch
 **Solution**:
 ```bash
 # Option 1: Use correct parameters
-./rckangaroo -range 135 -dp 20 -pubkey [correct_key] \
+./rckangaroo -range 134 -dp 20 -pubkey [correct_key] \
              -workfile puzzle135.work
 
 # Option 2: Force resume (not recommended)
-./rckangaroo -range 135 -dp 18 -pubkey [new_key] \
+./rckangaroo -range 134 -dp 18 -pubkey [new_key] \
              -workfile puzzle135.work -force
 ```
 

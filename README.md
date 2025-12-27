@@ -1008,13 +1008,13 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### Basic Configuration
 ```bash
 # Standard mode (no herds)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64
 
 # With work file save/resume
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
@@ -1025,7 +1025,7 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### With SOTA++ Herds (Recommended)
 ```bash
 # Herds mode for better coverage
-./rckangaroo -herds -range 135 \
+./rckangaroo -herds -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
@@ -1036,21 +1036,21 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### DP Bit Experimentation
 ```bash
 # DP 24 (more DPs, faster detection, more RAM)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 24 -gpu 012 -cpu 64 \
   -workfile puzzle135_dp24.work -autosave 300
 
 # DP 28 (balanced, recommended)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
   -workfile puzzle135_dp28.work -autosave 300
 
 # DP 38 (fewer DPs, slower detection, less RAM)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 38 -gpu 012 -cpu 64 \
@@ -1102,7 +1102,7 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### Resume from Saved State
 ```bash
 # Automatically resumes if puzzle135.work exists
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
@@ -1131,28 +1131,28 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 #### Select Specific GPUs
 ```bash
 # Use only GPU 0 and 2
-./rckangaroo -gpu 02 -range 135 ...
+./rckangaroo -gpu 02 -range 134 ...
 
 # Use all 3 GPUs
-./rckangaroo -gpu 012 -range 135 ...
+./rckangaroo -gpu 012 -range 134 ...
 
 # Use only GPU 1
-./rckangaroo -gpu 1 -range 135 ...
+./rckangaroo -gpu 1 -range 134 ...
 ```
 
 #### CPU Thread Configuration
 ```bash
 # No CPU workers (GPU-only)
-./rckangaroo -cpu 0 -gpu 012 -range 135 ...
+./rckangaroo -cpu 0 -gpu 012 -range 134 ...
 
 # 32 CPU threads
-./rckangaroo -cpu 32 -gpu 012 -range 135 ...
+./rckangaroo -cpu 32 -gpu 012 -range 134 ...
 
 # 64 CPU threads (recommended for dual Xeon)
-./rckangaroo -cpu 64 -gpu 012 -range 135 ...
+./rckangaroo -cpu 64 -gpu 012 -range 134 ...
 
 # 128 CPU threads (maximum supported)
-./rckangaroo -cpu 128 -gpu 012 -range 135 ...
+./rckangaroo -cpu 128 -gpu 012 -range 134 ...
 ```
 
 ### Benchmark Mode
@@ -1172,7 +1172,7 @@ __m256i c = _mm256_add_epi64(a, b);  // 4×64-bit additions in 1 cycle
 
 ```bash
 # Stop after 1 trillion operations (for testing)
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \
@@ -1603,7 +1603,7 @@ This build avg: K = 0.749
   -cpu 64 \
   -gpu 012 \
   -dp 28 \
-  -range 135 \
+  -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile puzzle135.work \
@@ -1623,7 +1623,7 @@ This build avg: K = 0.749
   -cpu 64 \
   -gpu 012 \
   -dp 28 \
-  -range 135 \
+  -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile puzzle135_herds.work \
@@ -1688,7 +1688,7 @@ grep "K-Factor:" test_*.log > k_factors.txt
 
 **Machine 1 (High-end):**
 ```bash
-./rckangaroo -cpu 64 -gpu 012 -dp 28 -range 135 \
+./rckangaroo -cpu 64 -gpu 012 -dp 28 -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile machine1_puzzle135.work -autosave 300
@@ -1696,7 +1696,7 @@ grep "K-Factor:" test_*.log > k_factors.txt
 
 **Machine 2 (Medium):**
 ```bash
-./rckangaroo -cpu 32 -gpu 01 -dp 28 -range 135 \
+./rckangaroo -cpu 32 -gpu 01 -dp 28 -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile machine2_puzzle135.work -autosave 300
@@ -1704,7 +1704,7 @@ grep "K-Factor:" test_*.log > k_factors.txt
 
 **Machine 3 (CPU-only server):**
 ```bash
-./rckangaroo -cpu 128 -dp 28 -range 135 \
+./rckangaroo -cpu 128 -dp 28 -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile machine3_puzzle135.work -autosave 300
@@ -1761,7 +1761,7 @@ scp puzzle135_merged_week1.work machine3:/path/
 **Automatic Resume:**
 ```bash
 # First run (creates work file)
-./rckangaroo -range 135 -dp 28 \
+./rckangaroo -range 134 -dp 28 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile puzzle135.work -autosave 60 \
@@ -1770,7 +1770,7 @@ scp puzzle135_merged_week1.work machine3:/path/
 # [System crashes or power loss]
 
 # Second run (automatically resumes)
-./rckangaroo -range 135 -dp 28 \
+./rckangaroo -range 134 -dp 28 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile puzzle135.work -autosave 60 \
@@ -2333,7 +2333,7 @@ undefined reference to `cudaXXX`
 4. **Use SOTA++ Herds**
    ```bash
    # Better coverage for large puzzles:
-   ./rckangaroo -herds -range 135 ...
+   ./rckangaroo -herds -range 134 ...
    ```
 
 ### For Memory Efficiency
@@ -2641,7 +2641,7 @@ For balance:
   -cpu 64 \
   -gpu 012 \
   -dp 28 \
-  -range 135 \
+  -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile puzzle135.work \
@@ -2714,7 +2714,7 @@ grep "K-factor" results_*.txt | awk '{sum+=$2; count++} END {print "Average K:",
 
 **Machine 1 (3x RTX 3060):**
 ```bash
-./rckangaroo -cpu 64 -dp 28 -range 135 \
+./rckangaroo -cpu 64 -dp 28 -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile machine1_puzzle135.work \
@@ -2723,7 +2723,7 @@ grep "K-factor" results_*.txt | awk '{sum+=$2; count++} END {print "Average K:",
 
 **Machine 2 (2x RTX 4090):**
 ```bash
-./rckangaroo -cpu 32 -dp 28 -range 135 \
+./rckangaroo -cpu 32 -dp 28 -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile machine2_puzzle135.work \
@@ -2732,7 +2732,7 @@ grep "K-factor" results_*.txt | awk '{sum+=$2; count++} END {print "Average K:",
 
 **Machine 3 (CPU Only - 128 threads):**
 ```bash
-./rckangaroo -cpu 128 -dp 28 -range 135 \
+./rckangaroo -cpu 128 -dp 28 -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -workfile machine3_puzzle135.work \
@@ -2823,7 +2823,7 @@ done
 # Test different DP values for your puzzle
 for dp in 24 26 28 30 32; do
     echo "Testing DP=$dp"
-    timeout 300 ./rckangaroo -cpu 64 -gpu 012 -dp $dp -range 135 \
+    timeout 300 ./rckangaroo -cpu 64 -gpu 012 -dp $dp -range 134 \
       -start 4000000000000000000000000000000000 \
       -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
       2>&1 | grep -E "Speed:|DPs:"
@@ -3465,7 +3465,7 @@ make clean
 make SM=86 USE_JACOBIAN=1 USE_SOTA_PLUS=1 PROFILE=release USE_NVML=1 -j
 
 # 3. Run puzzle 135 with save/resume
-./rckangaroo -range 135 \
+./rckangaroo -range 134 \
   -start 4000000000000000000000000000000000 \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
   -dp 28 -gpu 012 -cpu 64 \

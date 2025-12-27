@@ -52,7 +52,7 @@ ls -lh rckangaroo
 # Use YOUR current command but add -herds flag
 # Example (update with your actual start value and pubkey):
 
-./rckangaroo -herds -cpu 64 -dp 18 -range 135 \
+./rckangaroo -herds -cpu 64 -dp 18 -range 134 \
   -start <YOUR_START_VALUE> \
   -pubkey <YOUR_PUZZLE_135_PUBKEY> \
   -workfile puzzle135_herds.work
