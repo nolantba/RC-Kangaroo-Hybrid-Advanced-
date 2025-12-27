@@ -3,19 +3,22 @@
 ## Puzzle Details
 
 **Puzzle Number:** 135
-**Bit Range:** 135-bit
+**Range Size:** 134-bit (key range from 2^134 to 2^135-1)
 **Address:** `16RGFo6hjq9ym6Pj7N5H7L1NR1rVPJyw2v`
 **Public Key:** `02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16`
 **Prize:** 13.5 BTC (~$1.3 million USD)
 **Status:** UNSOLVED ✅
 
+**IMPORTANT:** Use `-range 134` NOT `-range 135` (the search space is 2^134 in size)
+
 **Key Range (HEX):**
-- Min: `4000000000000000000000000000000000`
-- Max: `7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`
+- Min: `4000000000000000000000000000000000` (2^134)
+- Max: `7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` (2^135-1)
 
 **Key Range (Decimal):**
 - Min: 2^134 = 21,778,071,482,940,061,661,655,974,875,633,165,533,184
 - Max: 2^135-1 = 43,556,142,965,880,123,323,311,949,751,266,331,066,367
+- **Range Size:** 2^134 ≈ 21.8 sextillion keys
 
 ---
 
@@ -34,7 +37,7 @@ The puzzle creator made a **1000 satoshi outgoing transaction** from this addres
 
 ### Operations Required
 
-**Theoretical operations:** ~2^67.5 = ~1.87 × 10^20 operations
+**Theoretical operations:** ~2^67 × 1.15 = ~1.69 × 10^20 operations (for 134-bit range)
 
 **Time estimates (Single GPU @ 20 GKeys/s):**
 
@@ -85,12 +88,12 @@ Based on your system (needed DP 20 for 93-bit with overflow):
 ### Generate 30x Tames for Puzzle 135
 
 ```bash
-./rckangaroo -tames tames135.dat -range 135 -dp 24 -max 30 -tames-autosave 300
+./rckangaroo -tames tames135.dat -range 134 -dp 24 -max 30 -tames-autosave 300
 ```
 
 **Flags explained:**
 - `-tames tames135.dat` = Save tames to this file
-- `-range 135` = Search 135-bit keyspace (2^134 to 2^135-1)
+- `-range 134` = Search 134-bit keyspace (2^134 to 2^135-1) - CORRECT!
 - `-dp 24` = Use 24 bits for distinguished points (prevents overflow)
 - `-max 30` = Generate 30x theoretical tames
 - `-tames-autosave 300` = Auto-save every 5 minutes (300 seconds)
@@ -101,7 +104,7 @@ Based on your system (needed DP 20 for 93-bit with overflow):
 ./rckangaroo \
   -tames tames135.dat \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
-  -range 135 \
+  -range 134 \
   -dp 24
 ```
 
@@ -110,7 +113,7 @@ Based on your system (needed DP 20 for 93-bit with overflow):
 ```bash
 ./rckangaroo \
   -pubkey 02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16 \
-  -range 135 \
+  -range 134 \
   -dp 24
 ```
 
@@ -274,7 +277,7 @@ ls -lh tames135.dat
 
 Just re-run the same command:
 ```bash
-./rckangaroo -tames tames135.dat -range 135 -dp 24 -max 30 -tames-autosave 300
+./rckangaroo -tames tames135.dat -range 134 -dp 24 -max 30 -tames-autosave 300
 ```
 
 It should resume from last auto-save.
@@ -302,7 +305,7 @@ cp tames135.dat tames135_backup_$(date +%Y%m%d).dat
 
 **Start command:**
 ```bash
-./rckangaroo -tames tames135.dat -range 135 -dp 24 -max 30 -tames-autosave 300
+./rckangaroo -tames tames135.dat -range 134 -dp 24 -max 30 -tames-autosave 300
 ```
 
 **Public Key:** `02145d2611c823a396ef6712ce0f712f09b9b4f3135e3e0aa3230fb9b6d08d1e16`
