@@ -9,7 +9,7 @@
 **Prize:** 13.5 BTC (~$1.3 million USD)
 **Status:** UNSOLVED ✅
 
-**IMPORTANT:** Use `-range 134` NOT `-range 134` (the search space is 2^134 in size)
+**IMPORTANT:** Use `-range 134` NOT `-range 135` (the search space is 2^134 in size)
 
 **Key Range (HEX):**
 - Min: `4000000000000000000000000000000000` (2^134)
